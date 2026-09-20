@@ -140,6 +140,7 @@ def calculate_match(resume_text, job_description):
     resume_clean = clean_text(resume_text)
     job_clean = clean_text(job_description)
 
+    # TF-IDF text similarity
     vectorizer = TfidfVectorizer(
         stop_words="english",
         ngram_range=(1, 2)
@@ -155,8 +156,25 @@ def calculate_match(resume_text, job_description):
         vectors[1:2]
     )[0][0]
 
-    return round(similarity * 100, 2)
+    similarity_score = similarity * 100
 
+    # Skill-based matching
+    resume_skills = find_skills(resume_text)
+    job_skills = find_skills(job_description)
+
+    if job_skills:
+        matching_skills = set(resume_skills) & set(job_skills)
+        skill_score = (len(matching_skills) / len(job_skills)) * 100
+
+        # Combined score
+        final_score = (
+            0.70 * skill_score +
+            0.30 * similarity_score
+        )
+    else:
+        final_score = similarity_score
+
+    return round(final_score, 2)
 
 # -----------------------------
 # User interface
